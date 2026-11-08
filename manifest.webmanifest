@@ -1,0 +1,25 @@
+{
+ "name": "Juegos",
+ "short_name": "Juegos",
+ "lang": "es-MX",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "orientation": "portrait",
+ "background_color": "#fff8ec",
+ "theme_color": "#17603c",
+ "icons": [
+  {
+   "src": "icono-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any maskable"
+  },
+  {
+   "src": "icono-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}

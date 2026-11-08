@@ -1,0 +1,1313 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#17603c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Juegos</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icono-192.png">
+  <style>/* Diseño para un señor mayor: letra grande, botones enormes, alto contraste, casi sin animaciones. */
+:root {
+  --fondo: #fff8ec;
+  --tinta: #1b1b1b;
+  --suave: #4a4a4a;
+  --verde: #17603c;
+  --verde-claro: #e3f3e8;
+  --rojo: #b3261e;
+  --azul: #1e4fa8;
+  --amarillo: #ffd23f;
+  --borde: #2b2b2b;
+  --tarjeta: #ffffff;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; height: 100%; background: var(--fondo); color: var(--tinta);
+  font-family: system-ui, "Samsung One", Roboto, "Segoe UI", Arial, sans-serif; font-size: 20px;
+  overscroll-behavior: none; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+}
+#app { min-height: 100%; display: flex; flex-direction: column; }
+button {
+  font: inherit; font-weight: 800; border: 3px solid var(--borde); border-radius: 18px; cursor: pointer;
+  background: var(--tarjeta); color: var(--tinta); min-height: 64px; padding: 10px 18px;
+}
+button:active { transform: scale(0.98); }
+button:disabled { opacity: 0.35; }
+.boton-principal { background: var(--verde); color: #fff; border-color: #0d3d26; font-size: 28px; min-height: 80px; width: 100%; }
+.boton-secundario { font-size: 24px; min-height: 72px; width: 100%; }
+
+/* Menú */
+.menu { padding: 22px 18px 28px; display: flex; flex-direction: column; gap: 16px; }
+.menu h1 { font-size: 38px; line-height: 1.15; margin: 6px 0 0; }
+.menu p { font-size: 26px; margin: 0 0 6px; color: var(--suave); font-weight: 700; }
+.juego-boton { display: flex; align-items: center; gap: 18px; text-align: left; font-size: 30px; min-height: 96px; width: 100%; padding: 12px 18px; }
+.juego-boton .icono { font-size: 50px; width: 64px; text-align: center; flex: none; display: flex; justify-content: center; }
+.menu p.dedicatoria { font-size: 21px; line-height: 1.35; font-weight: 600; text-align: center; margin: 6px 4px 0; padding: 14px 16px; background: #fff; border: 3px solid var(--borde); border-radius: 18px; color: var(--tinta); }
+.boton-sonido { font-size: 22px; min-height: 64px; padding: 8px 14px; align-self: center; margin-top: 6px; }
+
+/* Barra de cada juego */
+.barra { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #fff; border-bottom: 3px solid var(--borde); }
+.barra button { font-size: 22px; min-height: 60px; padding: 6px 14px; }
+.barra h2 { font-size: 26px; margin: 0; flex: 1; }
+.aviso { margin: 10px 12px 6px; padding: 14px 16px; border-radius: 16px; font-size: 26px; font-weight: 800; text-align: center; border: 3px solid var(--borde); min-height: 70px; display: flex; align-items: center; justify-content: center; }
+.aviso.tuyo { background: var(--verde); color: #fff; }
+.aviso.otro { background: #dfe6f3; color: var(--tinta); }
+.aviso.neutro { background: #fff; }
+.area { flex: 1; padding: 4px 12px 18px; display: flex; flex-direction: column; gap: 12px; }
+.fila-botones { display: flex; gap: 12px; }
+.fila-botones button { flex: 1; }
+.dato { font-size: 22px; font-weight: 700; text-align: center; color: var(--suave); }
+
+/* Ventanas (fin de partida, confirmar) */
+.velo { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); display: flex; align-items: center; justify-content: center; padding: 18px; z-index: 10; }
+.ventana { background: #fff; border: 4px solid var(--borde); border-radius: 24px; padding: 24px 20px; width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; text-align: center; }
+.ventana h3 { font-size: 36px; margin: 0; }
+.ventana p { font-size: 26px; margin: 0; font-weight: 600; }
+.ventana .grande { font-size: 64px; }
+
+/* Movimiento suave y corto: solo causa y efecto */
+.aparece { animation: aparece 0.35s ease-out; }
+@keyframes aparece { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+.tiembla { animation: tiembla 0.4s; }
+@keyframes tiembla { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* Dominó */
+.rivales { display: flex; gap: 8px; }
+.rival { flex: 1; border: 3px solid #999; border-radius: 14px; background: #fff; padding: 6px 4px; text-align: center; font-size: 18px; font-weight: 800; }
+.rival.turno { border-color: var(--azul); background: #dfe6f3; outline: 3px solid var(--azul); }
+.rival .cuantas { font-size: 16px; font-weight: 600; color: var(--suave); }
+.mesa { background: #2f6b3f; border-radius: 18px; border: 3px solid #1c4227; padding: 10px 6px; min-height: 190px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 4px; }
+.mesa .punta { outline: 4px solid var(--amarillo); border-radius: 6px; }
+.puntas { font-size: 24px; font-weight: 800; text-align: center; }
+.mano { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 8px 4px; border-radius: 18px; }
+.mano.turno { background: var(--verde-claro); outline: 4px solid var(--verde); }
+.ficha-mano { border: none; background: none; padding: 0; min-height: 0; border-radius: 10px; }
+.ficha-mano.apagada { opacity: 0.3; }
+.ficha-mano.sirve { outline: 5px solid var(--verde); outline-offset: 2px; }
+.ficha-mano.elegida { outline: 6px solid var(--amarillo); outline-offset: 2px; }
+.marcador { display: flex; justify-content: space-around; font-size: 22px; font-weight: 800; }
+
+/* Serpientes y escaleras */
+.tablero-se { position: relative; width: 100%; aspect-ratio: 1; border: 3px solid var(--borde); border-radius: 10px; overflow: hidden; }
+.tablero-se .casillas { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); }
+.tablero-se .casilla { font-size: 12px; font-weight: 800; padding: 2px 3px; color: #333; }
+.tablero-se svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.peon { position: absolute; width: 7.5%; height: 7.5%; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #000; transition: left 0.25s, top 0.25s; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 900; }
+.dado-zona { display: flex; align-items: center; gap: 14px; }
+.dado-zona button { flex: 1; }
+
+/* Memorama */
+.rejilla { display: grid; gap: 10px; }
+.carta { aspect-ratio: 0.85; border-radius: 16px; border: 3px solid var(--borde); display: flex; align-items: center; justify-content: center; font-size: 52px; min-height: 0; padding: 0; }
+.carta.tapada { background: var(--verde); color: #fff; font-size: 44px; }
+.carta.encontrada { background: var(--verde-claro); border-color: var(--verde); }
+
+/* Lotería */
+.cantada { display: flex; gap: 12px; align-items: stretch; }
+.carta-loteria { width: 46%; background: #fffdf2; border: 4px solid var(--borde); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; min-height: 160px; }
+.carta-loteria .dibujo { font-size: 72px; line-height: 1.1; }
+.carta-loteria .nombre { font-size: 24px; font-weight: 900; text-align: center; }
+.cantada .lado { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.historial { font-size: 30px; text-align: center; letter-spacing: 4px; }
+.tabla { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.casilla-l { position: relative; aspect-ratio: 0.95; background: #fffdf2; border: 3px solid var(--borde); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; min-height: 0; font-weight: 800; }
+.casilla-l .dibujo { font-size: 36px; line-height: 1.1; }
+.casilla-l .nombre { font-size: 12px; text-align: center; line-height: 1.1; }
+.casilla-l.pendiente { border-color: #c98a00; outline: 4px solid var(--amarillo); }
+.frijol { position: absolute; width: 40%; height: 26%; background: #6b3a1e; border-radius: 50%; border: 2px solid #3a1c0c; top: 30%; left: 30%; opacity: 0.9; box-shadow: inset 4px 3px 0 rgba(255, 255, 255, 0.25); }
+
+/* Damas */
+.tablero-d { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; aspect-ratio: 1; border: 4px solid #5a3a1e; border-radius: 8px; overflow: hidden; }
+.cuadro { position: relative; display: flex; align-items: center; justify-content: center; }
+.cuadro.claro { background: #f0d9b5; }
+.cuadro.oscuro { background: #a9784f; }
+.pieza { width: 80%; height: 80%; border-radius: 50%; border: 3px solid rgba(0, 0, 0, 0.55); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ffd23f; }
+.pieza.r { background: #c62828; }
+.pieza.n { background: #222; }
+.pieza.puede { outline: 4px solid #3ddc84; outline-offset: 1px; }
+.pieza.elegida { outline: 5px solid var(--amarillo); outline-offset: 1px; }
+.destino { width: 42%; height: 42%; border-radius: 50%; background: #3ddc84; border: 3px solid #0d3d26; }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>// ---- logica/domino.js
+// Dominó mexicano en parejas: doble seis, 4 jugadores, 7 fichas cada uno, sin pozo.
+// Jugadores: 0 = abuelo (abajo), 1 = rival (derecha), 2 = compañera (arriba), 3 = rival (izquierda).
+// Pareja 0 = jugadores 0 y 2 ("Nosotros"); pareja 1 = jugadores 1 y 3 ("Ellos").
+// La primera mano la abre quien tenga la mula de seis; después la salida rota.
+// Gana la mano quien se quede sin fichas; su pareja se anota los puntos de la pareja contraria.
+// Si nadie puede tirar (tranca), gana la pareja con menos puntos y se anota los de la otra.
+(function (raiz, fabrica) {
+  const m = fabrica();
+  if (typeof module === "object" && module.exports) module.exports = m;
+  else raiz.Domino = m;
+})(typeof self !== "undefined" ? self : this, function () {
+  function todas() {
+    const f = [];
+    for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) f.push([a, b]);
+    return f;
+  }
+
+  function barajar(arr, rnd) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function nuevaMano(salidaAnterior, rnd) {
+    rnd = rnd || Math.random;
+    const f = barajar(todas(), rnd);
+    const manos = [0, 1, 2, 3].map((j) => f.slice(j * 7, j * 7 + 7).sort((x, y) => x[0] + x[1] - (y[0] + y[1])));
+    let turno, obligada = null;
+    if (salidaAnterior == null) {
+      turno = manos.findIndex((m) => m.some((t) => t[0] === 6 && t[1] === 6));
+      obligada = [6, 6];
+    } else {
+      turno = (salidaAnterior + 1) % 4;
+    }
+    return { manos, cadena: [], turno, salida: turno, obligada, pases: 0, resultado: null, ultimo: null };
+  }
+
+  function puntas(e) {
+    if (!e.cadena.length) return null;
+    return [e.cadena[0][0], e.cadena[e.cadena.length - 1][1]];
+  }
+
+  // En qué lados cabe una ficha: [] si no entra.
+  function lados(e, t) {
+    const p = puntas(e);
+    if (!p) {
+      if (e.obligada) return t[0] === e.obligada[0] && t[1] === e.obligada[1] ? ["der"] : [];
+      return ["der"];
+    }
+    const out = [];
+    if (t[0] === p[0] || t[1] === p[0]) out.push("izq");
+    if (t[0] === p[1] || t[1] === p[1]) out.push("der");
+    if (out.length === 2 && p[0] === p[1]) return ["der"]; // las dos puntas iguales: da lo mismo
+    return out;
+  }
+
+  function jugables(e, j) {
+    return e.manos[j].map((t, i) => ({ i, lados: lados(e, t) })).filter((x) => x.lados.length);
+  }
+
+  function jugar(e, j, i, lado) {
+    const t = e.manos[j][i];
+    if (!lados(e, t).includes(lado)) throw new Error("jugada inválida");
+    e.manos[j].splice(i, 1);
+    const p = puntas(e);
+    if (!p) e.cadena.push([t[0], t[1]]);
+    else if (lado === "izq") e.cadena.unshift(t[1] === p[0] ? [t[0], t[1]] : [t[1], t[0]]);
+    else e.cadena.push(t[0] === p[1] ? [t[0], t[1]] : [t[1], t[0]]);
+    e.obligada = null;
+    e.pases = 0;
+    e.ultimo = { j, tipo: "tiro", ficha: t, lado };
+    if (!e.manos[j].length) terminar(e, "domino", j);
+    else e.turno = (j + 1) % 4;
+  }
+
+  function pasar(e, j) {
+    if (jugables(e, j).length) throw new Error("no puede pasar si tiene jugada");
+    e.pases += 1;
+    e.ultimo = { j, tipo: "paso" };
+    if (e.pases >= 4) terminar(e, "tranca", j);
+    else e.turno = (j + 1) % 4;
+  }
+
+  function puntos(mano) {
+    return mano.reduce((s, t) => s + t[0] + t[1], 0);
+  }
+
+  function terminar(e, tipo, j) {
+    const nos = puntos(e.manos[0]) + puntos(e.manos[2]);
+    const ellos = puntos(e.manos[1]) + puntos(e.manos[3]);
+    if (tipo === "domino") {
+      const equipo = j % 2;
+      e.resultado = { tipo, ganador: j, equipo, puntos: equipo === 0 ? ellos : nos };
+    } else if (nos !== ellos) {
+      const equipo = nos < ellos ? 0 : 1;
+      e.resultado = { tipo, ganador: null, equipo, puntos: equipo === 0 ? ellos : nos };
+    } else {
+      e.resultado = { tipo, ganador: null, equipo: null, puntos: 0 };
+    }
+    e.turno = null;
+  }
+
+  // Bot sencillo: suelta primero las mulas y las fichas pesadas.
+  function eleccionBot(e, j) {
+    const op = jugables(e, j);
+    if (!op.length) return null;
+    let mejor = null;
+    for (const o of op) {
+      const t = e.manos[j][o.i];
+      const valor = (t[0] === t[1] ? 10 : 0) + t[0] + t[1];
+      if (!mejor || valor > mejor.valor) mejor = { i: o.i, lado: o.lados[0], valor };
+    }
+    return mejor;
+  }
+
+  return { todas, nuevaMano, puntas, lados, jugables, jugar, pasar, puntos, eleccionBot, barajar };
+});
+
+// ---- logica/serpientes.js
+// Serpientes y escaleras clásico de 10x10. Si el dado se pasa de 100, la ficha rebota lo que sobra
+// (así nunca se queda atorado sin entender por qué).
+(function (raiz, fabrica) {
+  const m = fabrica();
+  if (typeof module === "object" && module.exports) module.exports = m;
+  else raiz.Serpientes = m;
+})(typeof self !== "undefined" ? self : this, function () {
+  // Pocas y cortas, que no se crucen: el tablero clásico es demasiado revuelto para verlo bien.
+  const ESCALERAS = { 3: 22, 11: 28, 36: 55, 47: 66, 70: 89, 78: 97 };
+  const SERPIENTES = { 19: 5, 33: 14, 52: 30, 64: 43, 85: 67, 93: 74, 98: 79 };
+
+  // Casillas que recorre paso a paso, dónde cae y si sube o baja.
+  function mover(pos, dado) {
+    const pasos = [];
+    let p = pos;
+    let dir = 1;
+    for (let k = 0; k < dado; k++) {
+      if (p === 100) dir = -1;
+      p += dir;
+      pasos.push(p);
+    }
+    let salto = null;
+    if (ESCALERAS[p]) salto = { tipo: "escalera", de: p, a: ESCALERAS[p] };
+    else if (SERPIENTES[p]) salto = { tipo: "serpiente", de: p, a: SERPIENTES[p] };
+    return { pasos, final: salto ? salto.a : p, salto };
+  }
+
+  // Fila y columna en pantalla (fila 0 arriba). El 1 está abajo a la izquierda y va en zigzag.
+  function celda(n) {
+    const r = Math.floor((n - 1) / 10);
+    let c = (n - 1) % 10;
+    if (r % 2 === 1) c = 9 - c;
+    return { fila: 9 - r, col: c };
+  }
+
+  return { ESCALERAS, SERPIENTES, mover, celda };
+});
+
+// ---- logica/loteria.js
+// Lotería mexicana: 54 cartas (con emojis en vez de los dibujos con derechos de autor).
+// "El Negrito" y "El Apache" se cambiaron por "El Charro" y "El Elote", como en barajas modernas.
+// El abuelo controla el ritmo con "Siguiente carta": nunca hay prisa.
+(function (raiz, fabrica) {
+  const m = fabrica();
+  if (typeof module === "object" && module.exports) module.exports = m;
+  else raiz.Loteria = m;
+})(typeof self !== "undefined" ? self : this, function () {
+  const CARTAS = [
+    ["El Gallo", "🐓"], ["El Diablito", "😈"], ["La Dama", "👸"], ["El Catrín", "🎩"], ["El Paraguas", "☂️"],
+    ["La Sirena", "🧜‍♀️"], ["La Escalera", "🪜"], ["La Botella", "🍾"], ["El Barril", "🛢️"], ["El Árbol", "🌳"],
+    ["El Melón", "🍈"], ["El Valiente", "🗡️"], ["El Gorrito", "🧢"], ["La Muerte", "💀"], ["La Pera", "🍐"],
+    ["La Bandera", "🇲🇽"], ["El Bandolón", "🎸"], ["El Violoncello", "🎻"], ["La Garza", "🦩"], ["El Pájaro", "🐦"],
+    ["La Mano", "✋"], ["La Bota", "👢"], ["La Luna", "🌙"], ["El Cotorro", "🦜"], ["El Borracho", "🍺"],
+    ["El Charro", "🤠"], ["El Corazón", "❤️"], ["La Sandía", "🍉"], ["El Tambor", "🥁"], ["El Camarón", "🦐"],
+    ["Las Jaras", "🏹"], ["El Músico", "🎺"], ["La Araña", "🕷️"], ["El Soldado", "💂"], ["La Estrella", "⭐"],
+    ["El Cazo", "🍲"], ["El Mundo", "🌎"], ["El Elote", "🌽"], ["El Nopal", "🌵"], ["El Alacrán", "🦂"],
+    ["La Rosa", "🌹"], ["La Calavera", "☠️"], ["La Campana", "🔔"], ["El Cantarito", "🏺"], ["El Venado", "🦌"],
+    ["El Sol", "☀️"], ["La Corona", "👑"], ["La Chalupa", "🛶"], ["El Pino", "🌲"], ["El Pescado", "🐟"],
+    ["La Palma", "🌴"], ["La Maceta", "🪴"], ["El Arpa", "🎼"], ["La Rana", "🐸"],
+  ];
+  const LINEAS = [];
+  for (let k = 0; k < 4; k++) {
+    LINEAS.push([0, 1, 2, 3].map((c) => k * 4 + c));
+    LINEAS.push([0, 1, 2, 3].map((f) => f * 4 + k));
+  }
+  LINEAS.push([0, 5, 10, 15], [3, 6, 9, 12]);
+
+  function barajar(arr, rnd) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function nuevaPartida(jugadores, modo, rnd) {
+    rnd = rnd || Math.random;
+    const idx = CARTAS.map((_, i) => i);
+    const tablas = [];
+    for (let j = 0; j < jugadores; j++) tablas.push(barajar(idx, rnd).slice(0, 16));
+    return { mazo: barajar(idx, rnd), cantadas: [], tablas, marcadas: tablas.map(() => []), modo, ganador: null };
+  }
+
+  function cantar(p) {
+    if (p.cantadas.length >= p.mazo.length) return null;
+    const c = p.mazo[p.cantadas.length];
+    p.cantadas.push(c);
+    return c;
+  }
+
+  // Marca la casilla pos de la tabla del jugador j si su carta ya salió. Devuelve true si se pudo.
+  function marcar(p, j, pos) {
+    const c = p.tablas[j][pos];
+    if (!p.cantadas.includes(c)) return false;
+    if (!p.marcadas[j].includes(pos)) p.marcadas[j].push(pos);
+    return true;
+  }
+
+  // Los bots marcan solos todo lo que ya salió.
+  function marcarBot(p, j) {
+    p.tablas[j].forEach((c, pos) => {
+      if (p.cantadas.includes(c) && !p.marcadas[j].includes(pos)) p.marcadas[j].push(pos);
+    });
+  }
+
+  function gano(p, j) {
+    const m = p.marcadas[j];
+    if (p.modo === "llena") return m.length === 16;
+    return LINEAS.some((l) => l.every((pos) => m.includes(pos)));
+  }
+
+  // Casillas del jugador cuya carta ya salió pero no ha marcado (para ayudarle).
+  function pendientes(p, j) {
+    return p.tablas[j].map((c, pos) => pos).filter((pos) => p.cantadas.includes(p.tablas[j][pos]) && !p.marcadas[j].includes(pos));
+  }
+
+  return { CARTAS, LINEAS, nuevaPartida, cantar, marcar, marcarBot, gano, pendientes };
+});
+
+// ---- logica/damas.js
+// Damas 8x8. Rojas = abuelo (abajo, suben); negras = bot (arriba, bajan).
+// Peones: avanzan y comen en diagonal hacia adelante. Dama (corona): un paso en cualquier diagonal.
+// Comer es obligatorio y se encadenan los saltos; la app solo ilumina jugadas válidas, así que el abuelo
+// toca la ficha y luego el destino final, y la cadena de saltos se hace sola.
+(function (raiz, fabrica) {
+  const m = fabrica();
+  if (typeof module === "object" && module.exports) module.exports = m;
+  else raiz.Damas = m;
+})(typeof self !== "undefined" ? self : this, function () {
+  function inicial() {
+    const t = [];
+    for (let r = 0; r < 8; r++) {
+      t.push([]);
+      for (let c = 0; c < 8; c++) {
+        const oscura = (r + c) % 2 === 1;
+        t[r].push(oscura && r < 3 ? "n" : oscura && r > 4 ? "r" : null);
+      }
+    }
+    return t;
+  }
+
+  const color = (p) => (p ? p.toLowerCase() : null);
+  const esDama = (p) => p === "R" || p === "N";
+  const dentro = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+
+  function direcciones(p) {
+    if (esDama(p)) return [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+    return color(p) === "r" ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]];
+  }
+
+  function copiar(t) {
+    return t.map((f) => f.slice());
+  }
+
+  // Todas las cadenas de saltos desde (r, c) con la pieza p (tablero t ya sin la pieza en el origen).
+  function saltos(t, r, c, p, comidas) {
+    const out = [];
+    for (const [dr, dc] of direcciones(p)) {
+      const mr = r + dr, mc = c + dc, lr = r + 2 * dr, lc = c + 2 * dc;
+      if (!dentro(lr, lc) || t[lr][lc] !== null) continue;
+      const enemiga = t[mr][mc];
+      if (!enemiga || color(enemiga) === color(p) || comidas.some(([a, b]) => a === mr && b === mc)) continue;
+      const nuevas = comidas.concat([[mr, mc]]);
+      const corona = !esDama(p) && (lr === 0 || lr === 7);
+      const siguen = corona ? [] : saltos(t, lr, lc, p, nuevas);
+      if (siguen.length) for (const s of siguen) out.push({ camino: [[lr, lc]].concat(s.camino), capturas: s.capturas });
+      else out.push({ camino: [[lr, lc]], capturas: nuevas });
+    }
+    return out;
+  }
+
+  function movimientos(t, col) {
+    const capt = [], simples = [];
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = t[r][c];
+        if (color(p) !== col) continue;
+        const sin = copiar(t);
+        sin[r][c] = null;
+        for (const s of saltos(sin, r, c, p, [])) capt.push({ de: [r, c], camino: s.camino, capturas: s.capturas });
+        for (const [dr, dc] of direcciones(p)) {
+          const nr = r + dr, nc = c + dc;
+          if (dentro(nr, nc) && t[nr][nc] === null) simples.push({ de: [r, c], camino: [[nr, nc]], capturas: [] });
+        }
+      }
+    }
+    if (!capt.length) return simples;
+    const max = Math.max(...capt.map((m) => m.capturas.length));
+    return capt.filter((m) => m.capturas.length === max); // se come lo más que se pueda
+  }
+
+  function aplicar(t, m) {
+    const n = copiar(t);
+    const [r0, c0] = m.de;
+    let p = n[r0][c0];
+    n[r0][c0] = null;
+    for (const [r, c] of m.capturas) n[r][c] = null;
+    const [rf, cf] = m.camino[m.camino.length - 1];
+    if (p === "r" && rf === 0) p = "R";
+    if (p === "n" && rf === 7) p = "N";
+    n[rf][cf] = p;
+    return n;
+  }
+
+  function cuenta(t, col) {
+    let k = 0;
+    for (const f of t) for (const p of f) if (color(p) === col) k++;
+    return k;
+  }
+
+  // Bot: come lo más que pueda, corona si puede y evita dejar fichas donde se las coman.
+  function eleccionBot(t, col, rnd) {
+    rnd = rnd || Math.random;
+    const movs = movimientos(t, col);
+    if (!movs.length) return null;
+    const rival = col === "n" ? "r" : "n";
+    let mejor = null;
+    for (const m of movs) {
+      const n = aplicar(t, m);
+      const [rf, cf] = m.camino[m.camino.length - 1];
+      let v = m.capturas.length * 10 + rnd() * 2;
+      if (!esDama(t[m.de[0]][m.de[1]]) && esDama(n[rf][cf])) v += 6;
+      const respuesta = movimientos(n, rival);
+      const peligro = respuesta.reduce((mx, r) => Math.max(mx, r.capturas.length), 0);
+      v -= peligro * 8;
+      if (col === "n") v += rf * 0.2;
+      if (!mejor || v > mejor.v) mejor = { m, v };
+    }
+    return mejor.m;
+  }
+
+  return { inicial, movimientos, aplicar, cuenta, eleccionBot, esDama, color };
+});
+
+// ---- logica/memorama.js
+// Memorama: pares de figuras grandes y fáciles de distinguir.
+(function (raiz, fabrica) {
+  const m = fabrica();
+  if (typeof module === "object" && module.exports) module.exports = m;
+  else raiz.Memorama = m;
+})(typeof self !== "undefined" ? self : this, function () {
+  const FIGURAS = ["🍎", "🐶", "🌻", "🚗", "⚽", "🐔", "🍉", "🐱", "☀️", "🌵", "🐟", "🎩"];
+
+  function nuevo(pares, rnd) {
+    rnd = rnd || Math.random;
+    const f = FIGURAS.slice(0, pares);
+    const cartas = f.concat(f).map((figura, i) => ({ id: i, figura, encontrada: false }));
+    for (let i = cartas.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [cartas[i], cartas[j]] = [cartas[j], cartas[i]];
+    }
+    return cartas;
+  }
+
+  return { FIGURAS, nuevo };
+});
+
+// ---- ui/ficha.js
+// Ficha de dominó dibujada en SVG (los emojis de dominó no existen en todos los teléfonos).
+(function () {
+  const PUNTOS = {
+    0: [], 1: [[1, 1]], 2: [[0, 0], [2, 2]], 3: [[0, 0], [1, 1], [2, 2]], 4: [[0, 0], [2, 0], [0, 2], [2, 2]],
+    5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]], 6: [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]],
+  };
+  function mitad(n, x0, y0, lado) {
+    return PUNTOS[n].map(([c, r]) => {
+      const cx = x0 + lado * (0.22 + c * 0.28), cy = y0 + lado * (0.22 + r * 0.28);
+      return `<circle cx="${cx}" cy="${cy}" r="${lado * 0.1}" fill="#111"/>`;
+    }).join("");
+  }
+  // a arriba / izquierda, b abajo / derecha. alto = lado largo en px.
+  window.FichaSVG = function (a, b, opciones) {
+    const o = opciones || {};
+    const largo = o.largo || 80, corto = largo / 2, vertical = !!o.vertical;
+    const w = vertical ? corto : largo, h = vertical ? largo : corto;
+    const dos = vertical
+      ? mitad(a, 0, 0, corto) + mitad(b, 0, corto, corto) + `<line x1="${corto * 0.15}" y1="${corto}" x2="${corto * 0.85}" y2="${corto}" stroke="#555" stroke-width="2"/>`
+      : mitad(a, 0, 0, corto) + mitad(b, corto, 0, corto) + `<line x1="${corto}" y1="${corto * 0.15}" x2="${corto}" y2="${corto * 0.85}" stroke="#555" stroke-width="2"/>`;
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block"><rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="${corto * 0.16}" fill="#fffdf5" stroke="#222" stroke-width="2"/>${dos}</svg>`;
+  };
+})();
+
+// ---- ui/domino.js
+// Dominó en parejas: el abuelo y Doña Lupe contra Don Chuy y Don Beto, a 100 puntos.
+window.Juego_domino = {
+  iniciar(area, A) {
+    const { el, esperar, sonido, BOTS, sesion } = A;
+    const NOMBRES = ["Tú", BOTS.chuy, BOTS.lupe, BOTS.beto];
+    const META = 100;
+    const marcador = [0, 0];
+    let salida = null, e = null, elegida = null, sigueHumano = null;
+
+    function nuevaMano() {
+      e = window.Domino.nuevaMano(salida);
+      salida = e.salida;
+      elegida = null;
+      ciclo();
+    }
+
+    function pintar() {
+      area.innerHTML = "";
+      const turno = e.turno;
+      const caja = (j, quien) => el("div", { clase: "rival" + (turno === j ? " turno" : "") },
+        NOMBRES[j], el("div", { clase: "cuantas" }, quien), el("div", { clase: "cuantas" }, e.manos[j].length === 1 ? "1 ficha" : `${e.manos[j].length} fichas`));
+      area.append(el("div", { clase: "rivales" }, caja(3, "contrario"), caja(2, "tu compañera"), caja(1, "contrario")));
+
+      const mesa = el("div", { clase: "mesa" });
+      e.cadena.forEach((t, k) => {
+        const s = el("span", { html: window.FichaSVG(t[0], t[1], { largo: 56, vertical: t[0] === t[1] }) });
+        if (k === 0 || k === e.cadena.length - 1) s.className = "punta";
+        mesa.append(s);
+      });
+      if (!e.cadena.length) mesa.append(el("div", { clase: "dato", style: "color:#fff" }, "La mesa está vacía"));
+      area.append(mesa);
+      const p = window.Domino.puntas(e);
+      area.append(el("div", { clase: "puntas" },
+        p ? (p[0] === p[1] ? `Se puede tirar al ${p[0]}` : `Se puede tirar al ${p[0]} o al ${p[1]}`) : e.obligada ? "Se sale con la mula de seis" : "Se puede salir con cualquier ficha"));
+
+      const op = turno === 0 ? window.Domino.jugables(e, 0) : [];
+      const mano = el("div", { clase: "mano" + (turno === 0 ? " turno" : "") });
+      e.manos[0].forEach((t, i) => {
+        const sirve = op.find((o) => o.i === i);
+        const clase = "ficha-mano" + (turno === 0 ? (sirve ? " sirve" : " apagada") : "") + (elegida === i ? " elegida" : "");
+        const b = el("button", { clase, html: window.FichaSVG(t[0], t[1], { largo: 84, vertical: true }), al: () => tocar(i, sirve, b) });
+        mano.append(b);
+      });
+      area.append(mano);
+      if (turno === 0 && elegida != null) {
+        area.append(el("div", { clase: "fila-botones" },
+          el("button", { clase: "boton-principal", al: () => tirar(elegida, "izq") }, `⬅ Al ${p[0]}`),
+          el("button", { clase: "boton-principal", al: () => tirar(elegida, "der") }, `Al ${p[1]} ➡`)));
+      }
+      if (turno === 0 && !op.length) area.append(el("button", { clase: "boton-principal", al: pasar }, "No tengo: paso"));
+      area.append(el("div", { clase: "marcador" }, el("span", {}, `Nosotros: ${marcador[0]}`), el("span", {}, `Ellos: ${marcador[1]}`)));
+      area.append(el("div", { clase: "dato" }, `Gana la pareja que llegue a ${META}`));
+    }
+
+    function tocar(i, sirve, boton) {
+      if (e.turno !== 0) return;
+      if (!sirve) {
+        boton.classList.add("tiembla");
+        setTimeout(() => boton.classList.remove("tiembla"), 450);
+        A.aviso("Esa no entra. Usa una de las verdes", "tuyo");
+        return;
+      }
+      if (sirve.lados.length === 1) return tirar(i, sirve.lados[0]);
+      elegida = i;
+      A.aviso("¿De qué lado la pones?", "tuyo");
+      pintar();
+    }
+
+    function tirar(i, lado) {
+      window.Domino.jugar(e, 0, i, lado);
+      elegida = null;
+      sonido("clac");
+      if (sigueHumano) sigueHumano();
+    }
+
+    function pasar() {
+      window.Domino.pasar(e, 0);
+      if (sigueHumano) sigueHumano();
+    }
+
+    async function ciclo() {
+      while (sesion.activa && !e.resultado) {
+        const j = e.turno;
+        if (j === 0) {
+          const hay = window.Domino.jugables(e, 0).length;
+          A.aviso(hay ? "¡Te toca! Toca una ficha verde" : "No tienes ficha que entre", "tuyo");
+          pintar();
+          await new Promise((r) => (sigueHumano = r));
+          sigueHumano = null;
+          continue;
+        }
+        A.aviso(`Turno de ${NOMBRES[j]}…`, "otro");
+        pintar();
+        await esperar(1300);
+        if (!sesion.activa) return;
+        const m = window.Domino.eleccionBot(e, j);
+        if (m) {
+          window.Domino.jugar(e, j, m.i, m.lado);
+          sonido("clac");
+        } else window.Domino.pasar(e, j);
+        const u = e.ultimo;
+        A.aviso(u.tipo === "paso" ? `${NOMBRES[j]} pasó` : `${NOMBRES[j]} tiró el ${u.ficha[0]} y ${u.ficha[1]}`, "otro");
+        pintar();
+        await esperar(900);
+      }
+      if (sesion.activa) finDeMano();
+    }
+
+    async function finDeMano() {
+      const r = e.resultado;
+      pintar();
+      let titulo, texto;
+      if (r.equipo === null) {
+        titulo = "Se cerró el juego";
+        texto = "Empataron en puntos: nadie se anota.";
+      } else {
+        marcador[r.equipo] += r.puntos;
+        const como = r.tipo === "domino"
+          ? (r.ganador === 0 ? "¡Te quedaste sin fichas!" : `${NOMBRES[r.ganador]} se quedó sin fichas.`)
+          : "Se cerró el juego y tuvieron menos puntos.";
+        titulo = r.equipo === 0 ? "¡Ganaron ustedes la mano!" : "Esta mano fue de ellos";
+        texto = `${como} ${r.equipo === 0 ? "Se anotan" : "Ellos se anotan"} ${r.puntos} puntos.`;
+      }
+      sonido(r.equipo === 0 ? "gana" : "baja");
+      A.aviso(titulo, r.equipo === 0 ? "tuyo" : "otro");
+      if (marcador[0] >= META || marcador[1] >= META) {
+        const ganamos = marcador[0] > marcador[1];
+        const v = await A.ventana({
+          grande: ganamos ? "🏆" : "🙂", titulo: ganamos ? "¡GANARON EL JUEGO!" : "Ganaron ellos el juego",
+          texto: `Nosotros ${marcador[0]} · Ellos ${marcador[1]}`,
+          botones: [{ texto: "Jugar otra vez", valor: "otra" }, { texto: "Volver al menú", valor: "menu", clase: "boton-secundario" }],
+        });
+        return v === "otra" ? A.otraVez() : A.menu();
+      }
+      await A.ventana({
+        grande: r.equipo === 0 ? "🎉" : "🙂", titulo, texto: `${texto} Van: Nosotros ${marcador[0]} · Ellos ${marcador[1]}.`,
+        botones: [{ texto: "Siguiente mano", valor: 1 }],
+      });
+      if (sesion.activa) nuevaMano();
+    }
+
+    nuevaMano();
+  },
+};
+
+// ---- ui/serpientes.js
+// Serpientes y escaleras: el abuelo (rojo) contra Doña Mari (azul).
+window.Juego_serpientes = {
+  iniciar(area, A) {
+    const { el, esperar, sonido, BOTS, sesion } = A;
+    const S = window.Serpientes;
+    const J = [{ nombre: "Tú", color: "#b3261e", letra: "TÚ", pos: 0 }, { nombre: BOTS.mari, color: "#1e4fa8", letra: "M", pos: 0 }];
+    const COLORES = ["#fff3c4", "#d9f2e3", "#fde2e1", "#dbe7fb"];
+    const centro = (n) => { const c = S.celda(n); return [c.col * 10 + 5, c.fila * 10 + 5]; };
+
+    const tablero = el("div", { clase: "tablero-se" });
+    const casillas = el("div", { clase: "casillas" });
+    for (let f = 0; f < 10; f++) {
+      for (let c = 0; c < 10; c++) {
+        const r = 9 - f;
+        const n = r * 10 + (r % 2 === 0 ? c : 9 - c) + 1;
+        casillas.append(el("div", { clase: "casilla", style: `background:${COLORES[(f + c) % 4]}` }, n === 100 ? "🏁100" : n));
+      }
+    }
+    let svg = "";
+    for (const [de, a] of Object.entries(S.ESCALERAS)) {
+      const [x1, y1] = centro(+de), [x2, y2] = centro(a);
+      const lx = x2 - x1, ly = y2 - y1, l = Math.hypot(lx, ly), px = (-ly / l) * 1.8, py = (lx / l) * 1.8;
+      svg += `<line x1="${x1 + px}" y1="${y1 + py}" x2="${x2 + px}" y2="${y2 + py}" stroke="#7a4a1f" stroke-width="1.3"/>`;
+      svg += `<line x1="${x1 - px}" y1="${y1 - py}" x2="${x2 - px}" y2="${y2 - py}" stroke="#7a4a1f" stroke-width="1.3"/>`;
+      for (let k = 1; k < l / 3.5; k++) {
+        const t = (k * 3.5) / l, x = x1 + lx * t, y = y1 + ly * t;
+        svg += `<line x1="${x + px}" y1="${y + py}" x2="${x - px}" y2="${y - py}" stroke="#7a4a1f" stroke-width="1"/>`;
+      }
+    }
+    for (const [de, a] of Object.entries(S.SERPIENTES)) {
+      const [x1, y1] = centro(+de), [x2, y2] = centro(a);
+      const lx = x2 - x1, ly = y2 - y1, l = Math.hypot(lx, ly), px = -ly / l, py = lx / l;
+      let d = `M ${x1} ${y1}`;
+      const tramos = Math.max(2, Math.round(l / 12));
+      for (let k = 1; k <= tramos; k++) {
+        const t0 = (k - 0.5) / tramos, t1 = k / tramos, s = k % 2 ? 4 : -4;
+        d += ` Q ${x1 + lx * t0 + px * s} ${y1 + ly * t0 + py * s} ${x1 + lx * t1} ${y1 + ly * t1}`;
+      }
+      svg += `<path d="${d}" fill="none" stroke="#14532d" stroke-width="3" stroke-linecap="round"/>`;
+      svg += `<path d="${d}" fill="none" stroke="#3fb15d" stroke-width="2" stroke-linecap="round"/>`;
+      svg += `<circle cx="${x1}" cy="${y1}" r="2.4" fill="#2e9d4a" stroke="#14532d" stroke-width="0.6"/>`;
+      svg += `<circle cx="${x1 - 0.8}" cy="${y1 - 0.6}" r="0.5" fill="#fff"/><circle cx="${x1 + 0.8}" cy="${y1 - 0.6}" r="0.5" fill="#fff"/>`;
+    }
+    tablero.append(casillas, el("div", { html: `<svg viewBox="0 0 100 100" preserveAspectRatio="none">${svg}</svg>` }));
+    const peones = J.map((j) => {
+      const p = el("div", { clase: "peon", style: `background:${j.color}` }, j.letra);
+      tablero.append(p);
+      return p;
+    });
+
+    const dado = el("div", {});
+    const boton = el("button", { clase: "boton-principal", al: () => turnoHumano() }, "🎲 Tirar el dado");
+    area.append(tablero, el("div", { clase: "dado-zona" }, dado, boton),
+      el("div", { clase: "dato" }, "Gana el primero en llegar al 100. 🪜 sube · 🐍 baja"));
+
+    function colocar(lento) {
+      J.forEach((j, k) => {
+        const p = peones[k];
+        p.style.transition = lento ? "left 0.7s, top 0.7s" : "";
+        if (!j.pos) { p.style.left = (k ? 10 : 1) + "%"; p.style.top = "101%"; p.style.display = "none"; return; }
+        p.style.display = "flex";
+        const c = S.celda(j.pos);
+        const juntos = J[0].pos === J[1].pos;
+        p.style.left = c.col * 10 + 1.2 + (juntos ? (k ? 2.6 : -0.6) : 1) + "%";
+        p.style.top = c.fila * 10 + 1.2 + (juntos ? (k ? 2.6 : -0.6) : 1) + "%";
+      });
+    }
+
+    function pintarDado(n) {
+      const P = { 1: [[1, 1]], 2: [[0, 0], [2, 2]], 3: [[0, 0], [1, 1], [2, 2]], 4: [[0, 0], [2, 0], [0, 2], [2, 2]],
+        5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]], 6: [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]] }[n] || [];
+      dado.innerHTML = `<svg width="84" height="84" viewBox="0 0 84 84"><rect x="3" y="3" width="78" height="78" rx="14" fill="#fff" stroke="#222" stroke-width="4"/>${P.map(([c, r]) => `<circle cx="${20 + c * 22}" cy="${20 + r * 22}" r="7.5" fill="#111"/>`).join("")}</svg>`;
+    }
+
+    let ocupado = false;
+    async function tirar(k) {
+      sonido("dado");
+      const d = 1 + Math.floor(Math.random() * 6);
+      pintarDado(d);
+      A.aviso(k === 0 ? `Sacaste ${d}` : `${J[k].nombre} sacó ${d}`, k === 0 ? "tuyo" : "otro");
+      await esperar(700);
+      const m = S.mover(J[k].pos, d);
+      for (const p of m.pasos) {
+        if (!sesion.activa) return true;
+        J[k].pos = p;
+        colocar();
+        sonido("clac");
+        await esperar(330);
+      }
+      if (m.salto) {
+        const sube = m.salto.tipo === "escalera";
+        A.aviso(k === 0 ? (sube ? "¡Subes por la escalera! 🪜" : "¡Te picó la serpiente! 🐍") : (sube ? `¡${J[k].nombre} sube por la escalera!` : `¡A ${J[k].nombre} le picó la serpiente!`), k === 0 ? "tuyo" : "otro");
+        sonido(sube ? "bien" : "baja");
+        await esperar(900);
+        J[k].pos = m.final;
+        colocar(true);
+        await esperar(900);
+      }
+      if (J[k].pos === 100) {
+        fin(k);
+        return true;
+      }
+      return false;
+    }
+
+    async function turnoHumano() {
+      if (ocupado || !sesion.activa) return;
+      ocupado = true;
+      boton.disabled = true;
+      if (await tirar(0)) return;
+      A.aviso(`Turno de ${J[1].nombre}…`, "otro");
+      await esperar(1200);
+      if (!sesion.activa || (await tirar(1))) return;
+      await esperar(500);
+      A.aviso("¡Te toca! Toca el botón para tirar el dado", "tuyo");
+      boton.disabled = false;
+      ocupado = false;
+    }
+
+    async function fin(k) {
+      sonido(k === 0 ? "gana" : "baja");
+      const v = await A.ventana({
+        grande: k === 0 ? "🏆" : "🙂", titulo: k === 0 ? "¡Llegaste al 100! ¡Ganaste!" : `Ganó ${J[k].nombre}`,
+        texto: k === 0 ? "¡Muy bien jugado!" : "¡La próxima es tuya!",
+        botones: [{ texto: "Jugar otra vez", valor: "otra" }, { texto: "Volver al menú", valor: "menu", clase: "boton-secundario" }],
+      });
+      return v === "otra" ? A.otraVez() : A.menu();
+    }
+
+    pintarDado(1);
+    colocar();
+    A.aviso("¡Te toca! Toca el botón para tirar el dado", "tuyo");
+  },
+};
+
+// ---- ui/memorama.js
+// Memorama: solo, sin reloj. Se cuentan los intentos solo para presumir.
+window.Juego_memorama = {
+  iniciar(area, A) {
+    const { el, esperar, sonido, sesion } = A;
+    A.aviso("¿Cómo quieres jugar?", "neutro");
+    area.append(
+      el("button", { clase: "boton-principal", al: () => empezar(6) }, "Fácil · 6 pares"),
+      el("button", { clase: "boton-secundario", al: () => empezar(8) }, "Más difícil · 8 pares"));
+
+    function empezar(pares) {
+      sonido("clac");
+      const cartas = window.Memorama.nuevo(pares);
+      let abiertas = [], intentos = 0, encontrados = 0, bloqueado = false;
+      area.innerHTML = "";
+      const rejilla = el("div", { clase: "rejilla", style: `grid-template-columns: repeat(${pares === 6 ? 3 : 4}, 1fr)` });
+      const datos = el("div", { clase: "dato" });
+      const botones = cartas.map((c, k) => el("button", { clase: "carta tapada", al: () => tocar(k) }, "?"));
+      rejilla.append(...botones);
+      area.append(rejilla, datos);
+
+      const pintar = (k) => {
+        const c = cartas[k], visible = c.encontrada || abiertas.includes(k);
+        botones[k].className = "carta" + (c.encontrada ? " encontrada" : visible ? "" : " tapada");
+        botones[k].textContent = visible ? c.figura : "?";
+      };
+      const contar = () => (datos.textContent = `Pares: ${encontrados} de ${pares} · Intentos: ${intentos}`);
+      A.aviso("Toca dos cartas para buscar su pareja", "tuyo");
+      contar();
+
+      async function tocar(k) {
+        if (bloqueado || cartas[k].encontrada || abiertas.includes(k)) return;
+        abiertas.push(k);
+        pintar(k);
+        sonido("voltear");
+        if (abiertas.length < 2) return;
+        intentos++;
+        const [a, b] = abiertas;
+        if (cartas[a].figura === cartas[b].figura) {
+          cartas[a].encontrada = cartas[b].encontrada = true;
+          encontrados++;
+          abiertas = [];
+          pintar(a);
+          pintar(b);
+          contar();
+          if (encontrados === pares) return fin();
+          sonido("bien");
+          A.aviso("¡Muy bien! Encontraste un par", "tuyo");
+        } else {
+          bloqueado = true;
+          contar();
+          A.aviso("No son iguales. Fíjate dónde quedaron", "neutro");
+          await esperar(1700);
+          if (!sesion.activa) return;
+          abiertas = [];
+          pintar(a);
+          pintar(b);
+          bloqueado = false;
+          A.aviso("Toca dos cartas para buscar su pareja", "tuyo");
+        }
+      }
+
+      async function fin() {
+        sonido("gana");
+        const v = await A.ventana({
+          grande: "🎉", titulo: "¡Lo lograste!", texto: `Encontraste los ${pares} pares en ${intentos} intentos.`,
+          botones: [{ texto: "Jugar otra vez", valor: "otra" }, { texto: "Volver al menú", valor: "menu", clase: "boton-secundario" }],
+        });
+        return v === "otra" ? A.otraVez() : A.menu();
+      }
+    }
+  },
+};
+
+// ---- ui/loteria.js
+// Lotería: el abuelo contra Don Chuy y Doña Lupe. Él decide cuándo sale la siguiente carta.
+window.Juego_loteria = {
+  iniciar(area, A) {
+    const { el, sonido, decir, BOTS } = A;
+    const L = window.Loteria;
+    const NOMB = ["Tú", BOTS.chuy, BOTS.lupe];
+    A.aviso("¿Cómo quieres jugar?", "neutro");
+    area.append(
+      el("button", { clase: "boton-principal", al: () => empezar("linea") }, "A línea"),
+      el("div", { clase: "dato" }, "Gana quien llene una fila, una columna o una diagonal"),
+      el("button", { clase: "boton-secundario", al: () => empezar("llena") }, "Tabla llena"),
+      el("div", { clase: "dato" }, "Gana quien llene toda su tabla"));
+
+    function empezar(modo) {
+      sonido("clac");
+      const p = L.nuevaPartida(3, modo);
+      area.innerHTML = "";
+      const dibujo = el("div", { clase: "dibujo" }, "🎴");
+      const nombre = el("div", { clase: "nombre" }, "¡Vamos a jugar!");
+      const carta = el("div", { clase: "carta-loteria" }, dibujo, nombre);
+      const historial = el("div", { clase: "historial" });
+      const boton = el("button", { clase: "boton-principal", al: siguiente }, "Siguiente carta ▶");
+      area.append(el("div", { clase: "cantada" }, carta,
+        el("div", { clase: "lado" }, boton, el("div", { clase: "dato" }, "Ya salieron:"), historial)));
+      const casillas = p.tablas[0].map((c, pos) => el("button", { clase: "casilla-l", al: () => marcar(pos) },
+        el("div", { clase: "dibujo" }, L.CARTAS[c][1]), el("div", { clase: "nombre" }, L.CARTAS[c][0])));
+      const bots = el("div", { clase: "dato" });
+      area.append(el("div", { clase: "tabla" }, casillas), bots);
+      A.aviso(modo === "linea" ? "Toca «Siguiente carta» para empezar" : "Toca «Siguiente carta» para empezar", "tuyo");
+      pintar(false);
+
+      function pintar(ayuda) {
+        const pend = ayuda ? L.pendientes(p, 0) : [];
+        const actual = p.cantadas[p.cantadas.length - 1];
+        casillas.forEach((b, pos) => {
+          b.classList.toggle("pendiente", pend.includes(pos) && p.tablas[0][pos] !== actual);
+          if (p.marcadas[0].includes(pos) && !b.querySelector(".frijol")) b.append(el("div", { clase: "frijol" }));
+        });
+        bots.textContent = `${NOMB[1]}: ${p.marcadas[1].length} · ${NOMB[2]}: ${p.marcadas[2].length} (de 16)`;
+        historial.textContent = p.cantadas.slice(-5, -1).reverse().map((c) => L.CARTAS[c][1]).join(" ");
+      }
+
+      // ¿Ganaría el abuelo si marcara lo que ya salió?
+      function podriaGanar() {
+        const q = { ...p, marcadas: [p.marcadas[0].concat(L.pendientes(p, 0))] };
+        return L.gano(q, 0);
+      }
+
+      function siguiente() {
+        if (p.ganador !== null) return;
+        [1, 2].forEach((j) => L.marcarBot(p, j));
+        const botGana = [1, 2].find((j) => L.gano(p, j));
+        if (botGana) {
+          if (podriaGanar()) {
+            pintar(true);
+            A.aviso("¡Ojo! Ya salieron cartas de tu tabla: márcalas", "tuyo");
+            return;
+          }
+          p.ganador = botGana;
+          pintar(false);
+          decir("¡Lotería!");
+          return fin(botGana);
+        }
+        const c = L.cantar(p);
+        if (c === null) return fin(null);
+        dibujo.textContent = L.CARTAS[c][1];
+        nombre.textContent = L.CARTAS[c][0];
+        carta.classList.remove("aparece");
+        void carta.offsetWidth;
+        carta.classList.add("aparece");
+        sonido("voltear");
+        decir(L.CARTAS[c][0]);
+        pintar(true);
+        A.aviso(p.tablas[0].includes(c) ? "¡Sí la tienes! Búscala y tócala" : "No la tienes. Toca «Siguiente carta»", "tuyo");
+      }
+
+      function marcar(pos) {
+        if (p.ganador !== null || p.marcadas[0].includes(pos)) return;
+        if (!L.marcar(p, 0, pos)) {
+          casillas[pos].classList.add("tiembla");
+          setTimeout(() => casillas[pos].classList.remove("tiembla"), 450);
+          A.aviso("Esa todavía no sale", "neutro");
+          return;
+        }
+        sonido("clac");
+        pintar(true);
+        if (L.gano(p, 0)) {
+          p.ganador = 0;
+          decir("¡Lotería!");
+          return fin(0);
+        }
+        A.aviso("¡Bien! Toca «Siguiente carta»", "tuyo");
+      }
+
+      async function fin(j) {
+        sonido(j === 0 ? "gana" : "baja");
+        const v = await A.ventana({
+          grande: j === 0 ? "🎉" : "🙂",
+          titulo: j === 0 ? "¡LOTERÍA! ¡Ganaste!" : j == null ? "Se acabaron las cartas" : `¡Lotería! Ganó ${NOMB[j]}`,
+          texto: j === 0 ? "¡Muy bien!" : "¡La próxima es tuya!",
+          botones: [{ texto: "Jugar otra vez", valor: "otra" }, { texto: "Volver al menú", valor: "menu", clase: "boton-secundario" }],
+        });
+        return v === "otra" ? A.otraVez() : A.menu();
+      }
+    }
+  },
+};
+
+// ---- ui/damas.js
+// Damas: el abuelo (rojas, abajo) contra Don Toño (negras). Solo se iluminan las jugadas válidas.
+window.Juego_damas = {
+  iniciar(area, A) {
+    const { el, esperar, sonido, BOTS, sesion } = A;
+    const D = window.Damas;
+    let t = D.inicial(), turno = "r", sel = null, movs = [], jugadas = 0;
+    const tablero = el("div", { clase: "tablero-d" });
+    const datos = el("div", { clase: "dato" });
+    area.append(tablero, datos, el("div", { clase: "dato" }, "Si puedes comer, tienes que comer. Al llegar al otro lado, tu ficha se corona ♛"));
+
+    const fin = (m) => m.camino[m.camino.length - 1];
+    function pintar() {
+      tablero.innerHTML = "";
+      const puede = new Set(turno === "r" ? movs.map((m) => m.de.join(",")) : []);
+      const destinos = sel ? movs.filter((m) => m.de[0] === sel[0] && m.de[1] === sel[1]) : [];
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const cuadro = el("div", { clase: "cuadro " + ((r + c) % 2 ? "oscuro" : "claro") });
+          const pz = t[r][c];
+          if (pz) {
+            const elegida = sel && sel[0] === r && sel[1] === c;
+            const clase = "pieza " + D.color(pz) + (elegida ? " elegida" : puede.has(r + "," + c) ? " puede" : "");
+            cuadro.append(el("div", { clase }, D.esDama(pz) ? "♛" : ""));
+          }
+          const dest = destinos.find((m) => fin(m)[0] === r && fin(m)[1] === c);
+          if (dest) cuadro.append(el("div", { clase: "destino" }));
+          cuadro.addEventListener("click", () => tocar(r, c, dest));
+          tablero.append(cuadro);
+        }
+      }
+      datos.textContent = `Tus fichas: ${D.cuenta(t, "r")} · ${BOTS.tono}: ${D.cuenta(t, "n")}`;
+    }
+
+    function tocar(r, c, dest) {
+      if (turno !== "r") return;
+      if (dest) return mover(dest);
+      if (movs.some((m) => m.de[0] === r && m.de[1] === c)) {
+        sel = [r, c];
+        sonido("voltear");
+        A.aviso("Ahora toca el círculo verde a donde va", "tuyo");
+        return pintar();
+      }
+      if (t[r][c] && D.color(t[r][c]) === "r") {
+        A.aviso(movs.some((m) => m.capturas.length) ? "Tienes que comer: usa la ficha marcada" : "Esa no se puede mover. Usa una marcada", "tuyo");
+      }
+    }
+
+    async function animar(m) {
+      const original = t;
+      let tmp = t.map((f) => f.slice());
+      let [pr, pc] = m.de;
+      const pieza = tmp[pr][pc];
+      for (let k = 0; k < m.camino.length; k++) {
+        const [nr, nc] = m.camino[k];
+        tmp[pr][pc] = null;
+        if (m.capturas[k]) tmp[m.capturas[k][0]][m.capturas[k][1]] = null;
+        tmp[nr][nc] = pieza;
+        [pr, pc] = [nr, nc];
+        t = tmp;
+        pintar();
+        sonido("clac");
+        await esperar(420);
+        if (!sesion.activa) return;
+        tmp = t.map((f) => f.slice());
+      }
+      t = D.aplicar(original, m);
+      pintar();
+    }
+
+    async function mover(m) {
+      turno = "animando";
+      sel = null;
+      await animar(m);
+      if (!sesion.activa) return;
+      if (m.capturas.length) sonido("bien");
+      jugadas++;
+      await turnoBot();
+    }
+
+    async function turnoBot() {
+      turno = "n";
+      A.aviso(`Turno de ${BOTS.tono}…`, "otro");
+      pintar();
+      await esperar(1200);
+      if (!sesion.activa) return;
+      const m = D.eleccionBot(t, "n");
+      if (!m) return terminar("r");
+      await animar(m);
+      if (!sesion.activa) return;
+      jugadas++;
+      if (m.capturas.length) A.aviso(`${BOTS.tono} te comió ${m.capturas.length === 1 ? "una ficha" : m.capturas.length + " fichas"}`, "otro");
+      await esperar(m.capturas.length ? 1100 : 300);
+      turnoHumano();
+    }
+
+    function turnoHumano() {
+      if (!sesion.activa) return;
+      if (jugadas >= 200) return terminar(null);
+      turno = "r";
+      sel = null;
+      movs = D.movimientos(t, "r");
+      if (!movs.length) return terminar("n");
+      A.aviso(movs.some((m) => m.capturas.length) ? "¡Puedes comer! Toca la ficha marcada" : "¡Te toca! Toca una de tus fichas rojas", "tuyo");
+      pintar();
+    }
+
+    async function terminar(ganador) {
+      turno = "fin";
+      sonido(ganador === "r" ? "gana" : "baja");
+      const v = await A.ventana({
+        grande: ganador === "r" ? "🏆" : "🙂",
+        titulo: ganador === "r" ? "¡Ganaste!" : ganador === "n" ? `Ganó ${BOTS.tono}` : "Quedaron empatados",
+        texto: ganador === "r" ? `Le ganaste a ${BOTS.tono}.` : "¡La próxima es tuya!",
+        botones: [{ texto: "Jugar otra vez", valor: "otra" }, { texto: "Volver al menú", valor: "menu", clase: "boton-secundario" }],
+      });
+      return v === "otra" ? A.otraVez() : A.menu();
+    }
+
+    turnoHumano();
+  },
+};
+
+// ---- ui/app.js
+// Armazón de la app: menú, ventanas, sonido, voz, botón Atrás y pantalla siempre encendida.
+(function () {
+  // Quién juega en ESTE celular. Cada teléfono guarda el suyo (el del abuelo nunca eligió nada y sigue
+  // diciendo "Profesor Enrique"). Se cambia tocando el saludo, o abriendo la liga con ?soy=susana una vez.
+  const PERSONAS = ["Profesor Enrique", "Susana"];
+  const DEDICATORIA = "Estos juegos los hizo Emiliano, tu nieto, con mucho cariño y aprecio para que los disfrutes. ❤️";
+  const BOTS ={ lupe: "Doña Lupe", chuy: "Don Chuy", beto: "Don Beto", mari: "Doña Mari", tono: "Don Toño" };
+  const JUEGOS = [
+    { id: "domino", nombre: "Dominó", icono: "🁫" },
+    { id: "serpientes", nombre: "Serpientes y escaleras", icono: "🐍" },
+    { id: "memorama", nombre: "Memorama", icono: "🧠" },
+    { id: "loteria", nombre: "Lotería", icono: "🌵" },
+    { id: "damas", nombre: "Damas", icono: "⚫" },
+  ];
+  const guardado = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
+  const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ } };
+
+  let nombre = guardado("nombre", PERSONAS[0]);
+  const soy = (new URLSearchParams(location.search).get("soy") || "").trim().toLowerCase();
+  const pedida = soy && PERSONAS.find((p) => p.toLowerCase().includes(soy));
+  if (pedida) {
+    nombre = pedida;
+    guardar("nombre", nombre);
+    history.replaceState(null, "", location.pathname); // que la liga no vuelva a cambiarlo al recargar
+  }
+
+  let conSonido = guardado("sonido", true);
+  let sesion = { activa: false };
+  let enJuego = false;
+  const raiz = document.getElementById("app");
+
+  // ---------------------------------------------------------------- utilidades de pantalla
+  function el(tag, attrs, ...hijos) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (k === "clase") n.className = v;
+      else if (k === "al") n.addEventListener("click", v);
+      else if (k === "html") n.innerHTML = v;
+      else if (v !== false && v != null) n.setAttribute(k, v);
+    }
+    for (const h of hijos.flat()) if (h != null && h !== false) n.append(h.nodeType ? h : document.createTextNode(String(h)));
+    return n;
+  }
+  const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function ventana({ titulo, texto, grande, botones }) {
+    return new Promise((listo) => {
+      const v = el("div", { clase: "velo" },
+        el("div", { clase: "ventana aparece" },
+          grande ? el("div", { clase: "grande" }, grande) : null,
+          el("h3", {}, titulo),
+          texto ? el("p", {}, texto) : null,
+          botones.map((b) => el("button", { clase: b.clase || "boton-principal", al: () => { v.remove(); listo(b.valor); } }, b.texto))));
+      document.body.append(v);
+    });
+  }
+
+  function confirmar(texto) {
+    return ventana({ titulo: texto, botones: [{ texto: "Sí", valor: true }, { texto: "No, seguir jugando", valor: false, clase: "boton-secundario" }] });
+  }
+
+  // ---------------------------------------------------------------- sonido (sintetizado, grave y corto)
+  let ctx = null;
+  function nota(frec, ini, dur, vol, tipo) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = tipo || "sine";
+    o.frequency.value = frec;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime + ini);
+    g.gain.exponentialRampToValueAtTime(vol, ctx.currentTime + ini + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + ini + dur);
+    o.connect(g).connect(ctx.destination);
+    o.start(ctx.currentTime + ini);
+    o.stop(ctx.currentTime + ini + dur + 0.05);
+  }
+  function sonido(tipo) {
+    if (!conSonido) return;
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+      if (tipo === "clac") nota(320, 0, 0.07, 0.5, "triangle");
+      else if (tipo === "dado") [0, 0.08, 0.16, 0.26].forEach((t) => nota(260 + Math.random() * 80, t, 0.06, 0.35, "triangle"));
+      else if (tipo === "voltear") nota(440, 0, 0.09, 0.25);
+      else if (tipo === "bien") { nota(523, 0, 0.14, 0.3); nota(659, 0.13, 0.2, 0.3); }
+      else if (tipo === "gana") [523, 659, 784, 1046].forEach((f, k) => nota(f, k * 0.16, 0.3, 0.3));
+      else if (tipo === "baja") { nota(392, 0, 0.18, 0.3); nota(262, 0.16, 0.3, 0.3); }
+    } catch (e) { /* sin audio */ }
+    if (navigator.vibrate && (tipo === "clac" || tipo === "gana")) navigator.vibrate(tipo === "gana" ? 120 : 25);
+  }
+
+  // Voz para cantar la lotería (Chrome en Android trae voces en español).
+  function decir(texto) {
+    if (!conSonido || !("speechSynthesis" in window)) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(texto);
+      const voces = speechSynthesis.getVoices();
+      u.voice = voces.find((v) => v.lang === "es-MX") || voces.find((v) => v.lang && v.lang.startsWith("es")) || null;
+      u.lang = "es-MX";
+      u.rate = 0.9;
+      speechSynthesis.speak(u);
+    } catch (e) { /* sin voz */ }
+  }
+
+  // ---------------------------------------------------------------- pantalla encendida y botón Atrás
+  let candado = null;
+  async function pantallaEncendida() {
+    try { if ("wakeLock" in navigator && !candado) { candado = await navigator.wakeLock.request("screen"); candado.addEventListener("release", () => (candado = null)); } } catch (e) { /* no se pudo */ }
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") pantallaEncendida(); });
+  document.addEventListener("click", pantallaEncendida);
+
+  // Atrás nunca saca de la app: en un juego pregunta si quiere volver al menú; en el menú no hace nada.
+  history.pushState({ app: 1 }, "");
+  window.addEventListener("popstate", async () => {
+    history.pushState({ app: 1 }, "");
+    if (enJuego && !document.querySelector(".velo") && (await confirmar("¿Quieres dejar este juego y volver al menú?"))) menu();
+  });
+
+  // ---------------------------------------------------------------- pantallas
+  function menu() {
+    sesion.activa = false;
+    enJuego = false;
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    raiz.innerHTML = "";
+    const botonSonido = el("button", { clase: "boton-sonido", al: () => {
+      conSonido = !conSonido;
+      guardar("sonido", conSonido);
+      botonSonido.textContent = conSonido ? "🔊 Con sonido" : "🔈 Sin sonido";
+      sonido("clac");
+    } }, conSonido ? "🔊 Con sonido" : "🔈 Sin sonido");
+    // El saludo va solo en su renglón (con nombre largo no cabe junto al botón) y el sonido hasta abajo.
+    // Tocar el saludo deja elegir quién juega; no se anuncia para no llenar la pantalla.
+    raiz.append(el("div", { clase: "menu" },
+      el("h1", { al: elegirNombre }, `¡Hola, ${nombre}!`),
+      el("p", {}, "¿A qué quieres jugar?"),
+      JUEGOS.map((j) => el("button", { clase: "juego-boton", al: () => abrir(j) },
+        j.id === "domino" ? el("span", { clase: "icono", html: window.FichaSVG(6, 6, { largo: 60, vertical: true }) }) : el("span", { clase: "icono" }, j.icono),
+        j.nombre)),
+      el("p", { clase: "dedicatoria" }, DEDICATORIA),
+      botonSonido));
+  }
+
+  async function elegirNombre() {
+    sonido("clac");
+    const quien = await ventana({
+      titulo: "¿Quién va a jugar?",
+      botones: PERSONAS.map((p) => ({ texto: p, valor: p, clase: p === nombre ? "boton-principal" : "boton-secundario" })),
+    });
+    if (quien && quien !== nombre) {
+      nombre = quien;
+      guardar("nombre", nombre);
+    }
+    menu();
+  }
+
+  function abrir(j) {
+    sonido("clac");
+    sesion.activa = false;
+    sesion = { activa: true };
+    enJuego = true;
+    raiz.innerHTML = "";
+    const aviso = el("div", { clase: "aviso neutro" }, "");
+    const area = el("div", { clase: "area" });
+    raiz.append(
+      el("div", { clase: "barra" },
+        el("button", { al: async () => { if (await confirmar("¿Quieres dejar este juego y volver al menú?")) menu(); } }, "🏠 Menú"),
+        el("h2", {}, j.nombre)),
+      aviso, area);
+    const juego = window["Juego_" + j.id];
+    juego.iniciar(area, {
+      el, esperar, ventana, sonido, decir, BOTS, sesion,
+      aviso(texto, tipo) { aviso.className = "aviso " + (tipo || "neutro"); aviso.textContent = texto; },
+      menu,
+      otraVez: () => abrir(j),
+    });
+  }
+
+  window.App = { menu, abrir, JUEGOS };
+  menu();
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
+</script>
+</body>
+</html>
